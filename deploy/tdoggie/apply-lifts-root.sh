@@ -17,9 +17,27 @@ NGINX_AVAILABLE="/etc/nginx/sites-available/lifts.tdoggie.com"
 NGINX_ENABLED="/etc/nginx/sites-enabled/lifts.tdoggie.com"
 DOMAIN="lifts.tdoggie.com"
 PORT="3002"
+EXPECTED_IP="173.230.136.222"
 
 if [[ ! -f "${APP_DIR}/server.js" ]]; then
   echo "Expected app checkout at ${APP_DIR}" >&2
+  exit 1
+fi
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "Node.js 20+ is required. Run prepare-lifts-root.sh first." >&2
+  exit 1
+fi
+
+node_major=$(node -p "Number(process.versions.node.split('.')[0])")
+if [[ "${node_major}" -lt 20 ]]; then
+  echo "Node.js 20+ is required; found $(node --version). Run prepare-lifts-root.sh first." >&2
+  exit 1
+fi
+
+if [[ ! -d "${APP_DIR}/node_modules" ]]; then
+  echo "Expected production dependencies in ${APP_DIR}/node_modules." >&2
+  echo "Run ${APP_DIR}/deploy/tdoggie/deploy-app.sh as tindell first." >&2
   exit 1
 fi
 
@@ -37,6 +55,7 @@ chown "${APP_USER}:${APP_USER}" "${DATA_DIR}"
 chmod 750 "${DATA_DIR}"
 
 if [[ ! -f "${ENV_FILE}" ]]; then
+  umask 027
   if [[ -t 0 ]]; then
     read -r -s -p "Lifts login password: " lifts_password
     echo
@@ -78,6 +97,8 @@ EnvironmentFile=${ENV_FILE}
 ExecStart=/usr/bin/node server.js
 Restart=on-failure
 RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
@@ -103,19 +124,29 @@ EOF
 ln -sfn "${NGINX_AVAILABLE}" "${NGINX_ENABLED}"
 
 systemctl daemon-reload
-systemctl enable lifts.service
-systemctl restart lifts.service
-
 nginx -t
 systemctl reload nginx
 
+systemctl enable lifts.service
+systemctl restart lifts.service
+
+curl -fsSI "http://127.0.0.1:${PORT}/login" >/dev/null
+curl -fsSI -H "Host: ${DOMAIN}" "http://127.0.0.1/login" >/dev/null
+
+certbot_bin=""
 if command -v certbot >/dev/null 2>&1; then
-  if getent ahostsv4 "${DOMAIN}" | awk '{print $1; exit}' | grep -qx '173.230.136.222'; then
-    certbot --nginx -d "${DOMAIN}" --non-interactive --agree-tos --redirect || {
+  certbot_bin=$(command -v certbot)
+elif [[ -x /snap/bin/certbot ]]; then
+  certbot_bin=/snap/bin/certbot
+fi
+
+if [[ -n "${certbot_bin}" ]]; then
+  if getent ahostsv4 "${DOMAIN}" | awk '{print $1; exit}' | grep -qx "${EXPECTED_IP}"; then
+    "${certbot_bin}" --nginx -d "${DOMAIN}" --non-interactive --agree-tos --redirect || {
       echo "Certbot failed. The app is running over HTTP; rerun certbot after DNS is settled." >&2
     }
   else
-    echo "Skipping certbot because ${DOMAIN} does not resolve to 173.230.136.222 yet."
+    echo "Skipping certbot because ${DOMAIN} does not resolve to ${EXPECTED_IP} yet."
   fi
 else
   echo "Skipping certbot because certbot is not available on PATH."

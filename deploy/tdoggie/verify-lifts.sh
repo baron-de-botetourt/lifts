@@ -27,5 +27,12 @@ fi
 echo "Local app check:"
 curl -fsSI "http://127.0.0.1:${PORT}/login" | sed -n '1,8p'
 
-echo "Public HTTPS check:"
-curl -fsSI "https://${DOMAIN}/login" | sed -n '1,12p'
+echo "Local nginx vhost check:"
+curl -fsSI -H "Host: ${DOMAIN}" "http://127.0.0.1/login" | sed -n '1,8p'
+
+if [[ "${resolved_ip:-}" == "${EXPECTED_IP}" ]]; then
+  echo "Public HTTPS check:"
+  curl -fsSI "https://${DOMAIN}/login" | sed -n '1,12p'
+else
+  echo "Skipping public HTTPS check until DNS resolves to ${EXPECTED_IP}."
+fi
