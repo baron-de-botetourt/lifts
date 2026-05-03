@@ -56,10 +56,11 @@ chmod 750 "${DATA_DIR}"
 
 if [[ ! -f "${ENV_FILE}" ]]; then
   umask 027
-  if [[ -t 0 ]]; then
+  lifts_password="${LIFTS_PASSWORD:-}"
+  if [[ -z "${lifts_password}" && -t 0 ]]; then
     read -r -s -p "Lifts login password: " lifts_password
     echo
-  else
+  elif [[ -z "${lifts_password}" ]]; then
     echo "Set LIFTS_PASSWORD in the environment or run interactively." >&2
     exit 1
   fi
@@ -69,7 +70,11 @@ if [[ ! -f "${ENV_FILE}" ]]; then
     exit 1
   fi
 
-  session_secret=$(openssl rand -base64 48)
+  session_secret="${LIFTS_SESSION_SECRET:-}"
+  if [[ -z "${session_secret}" ]]; then
+    session_secret=$(openssl rand -base64 48)
+  fi
+
   cat > "${ENV_FILE}" <<EOF
 HOST=127.0.0.1
 PORT=${PORT}
@@ -142,7 +147,14 @@ fi
 
 if [[ -n "${certbot_bin}" ]]; then
   if getent ahostsv4 "${DOMAIN}" | awk '{print $1; exit}' | grep -qx "${EXPECTED_IP}"; then
-    "${certbot_bin}" --nginx -d "${DOMAIN}" --non-interactive --agree-tos --redirect || {
+    certbot_args=(--nginx -d "${DOMAIN}" --non-interactive --agree-tos --redirect)
+    if [[ -n "${CERTBOT_EMAIL:-}" ]]; then
+      certbot_args+=(--email "${CERTBOT_EMAIL}")
+    else
+      certbot_args+=(--register-unsafely-without-email)
+    fi
+
+    "${certbot_bin}" "${certbot_args[@]}" || {
       echo "Certbot failed. The app is running over HTTP; rerun certbot after DNS is settled." >&2
     }
   else

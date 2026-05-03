@@ -63,6 +63,13 @@ systemd unit, writes the nginx site at
 `/etc/nginx/sites-available/lifts.tdoggie.com`, enables the site symlink, runs
 `nginx -t`, reloads nginx, and starts `lifts.service`.
 
+For non-interactive sudo handoff, set these environment variables before
+running the root script:
+
+```sh
+sudo LIFTS_PASSWORD='...' CERTBOT_EMAIL='you@example.com' ./deploy/tdoggie/apply-lifts-root.sh
+```
+
 Certbot runs only after `lifts.tdoggie.com` resolves to `173.230.136.222`.
 
 ## 6. Verify
