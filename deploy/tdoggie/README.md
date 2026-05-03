@@ -61,7 +61,9 @@ The root script creates `/etc/lifts/lifts.env` if it does not exist. It prompts
 for the Lifts login password, generates `LIFTS_SESSION_SECRET`, writes the
 systemd unit, writes the nginx site at
 `/etc/nginx/sites-available/lifts.tdoggie.com`, enables the site symlink, runs
-`nginx -t`, reloads nginx, and starts `lifts.service`.
+`nginx -t`, reloads nginx, and starts `lifts.service`. On SELinux-enabled
+Rocky Linux, it also enables `httpd_can_network_connect` so nginx may proxy to
+the local Node service.
 
 For non-interactive sudo handoff, set these environment variables before
 running the root script:

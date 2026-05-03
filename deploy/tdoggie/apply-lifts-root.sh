@@ -19,6 +19,45 @@ DOMAIN="lifts.tdoggie.com"
 PORT="3002"
 EXPECTED_IP="173.230.136.222"
 
+wait_for_url() {
+  local url=$1
+  local description=$2
+
+  for _ in {1..30}; do
+    if curl -fsSI "${url}" >/dev/null; then
+      return 0
+    fi
+    sleep 1
+  done
+
+  echo "Timed out waiting for ${description}: ${url}" >&2
+  systemctl status lifts.service --no-pager || true
+  journalctl -u lifts.service -n 80 --no-pager || true
+  return 1
+}
+
+configure_selinux_nginx_proxy() {
+  if ! command -v getenforce >/dev/null 2>&1 || ! command -v getsebool >/dev/null 2>&1; then
+    return
+  fi
+
+  case "$(getenforce)" in
+    Enforcing|Permissive)
+      ;;
+    *)
+      return
+      ;;
+  esac
+
+  if getsebool httpd_can_network_connect 2>/dev/null | grep -q -- "--> off"; then
+    if ! command -v setsebool >/dev/null 2>&1; then
+      echo "SELinux is enabled, but setsebool is not available to allow nginx proxying." >&2
+      exit 1
+    fi
+    setsebool -P httpd_can_network_connect on
+  fi
+}
+
 if [[ ! -f "${APP_DIR}/server.js" ]]; then
   echo "Expected app checkout at ${APP_DIR}" >&2
   exit 1
@@ -128,6 +167,8 @@ EOF
 
 ln -sfn "${NGINX_AVAILABLE}" "${NGINX_ENABLED}"
 
+configure_selinux_nginx_proxy
+
 systemctl daemon-reload
 nginx -t
 systemctl reload nginx
@@ -135,7 +176,13 @@ systemctl reload nginx
 systemctl enable lifts.service
 systemctl restart lifts.service
 
-curl -fsSI "http://127.0.0.1:${PORT}/login" >/dev/null
+wait_for_url "http://127.0.0.1:${PORT}/login" "Lifts app"
+for _ in {1..10}; do
+  if curl -fsSI -H "Host: ${DOMAIN}" "http://127.0.0.1/login" >/dev/null; then
+    break
+  fi
+  sleep 1
+done
 curl -fsSI -H "Host: ${DOMAIN}" "http://127.0.0.1/login" >/dev/null
 
 certbot_bin=""
