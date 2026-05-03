@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Lifts">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#244c3a">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="stylesheet" href="/styles.css">
+  <title>Lifts</title>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="day-block">
+        <span id="lift-count">0/5 lifts</span>
+        <strong id="day-label">Day A</strong>
+      </div>
+      <div class="timer" aria-live="polite">
+        <span>Rest</span>
+        <strong id="rest-timer">Ready</strong>
+      </div>
+      <a class="export-link" href="/export/database.sqlite">DB</a>
+    </header>
+
+    <main id="workout" class="workout" aria-live="polite">
+      <p class="loading">Loading</p>
+    </main>
+
+    <footer class="actions">
+      <button id="finish-button" class="finish-button" type="button">Finish Workout</button>
+    </footer>
+  </div>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>
