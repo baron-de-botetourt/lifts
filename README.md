@@ -22,7 +22,6 @@ Edit `src/program.js` to change:
 - sets and reps
 - weight increments
 - bodyweight rep increments
-- bodyweight rep increments
 - deload behavior
 
 The app has no configuration UI by design.

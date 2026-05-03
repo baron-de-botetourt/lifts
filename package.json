@@ -1,0 +1,18 @@
+{
+  "name": "lifts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node --watch server.js",
+    "test": "NODE_ENV=test node --test"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.9.1",
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
