@@ -56,7 +56,7 @@ export const PROGRAM = {
       targetSets: 5,
       targetReps: 5,
       startingWeightLb: 45,
-      incrementLb: 5
+      incrementLb: 2.5
     },
     deadlift: {
       name: "Deadlift",

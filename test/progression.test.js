@@ -17,6 +17,18 @@ test("successful weighted lift increments by the configured amount", () => {
   store.close();
 });
 
+test("overhead press increments by two and a half pounds", () => {
+  const store = freshStore();
+  store.finishWorkout(store.getOrCreateCurrentWorkout().workout.id);
+  const workout = store.getOrCreateCurrentWorkout();
+  completeLift(store, workout, "overhead_press");
+
+  store.finishWorkout(workout.workout.id);
+
+  assert.equal(store.getLiftState("overhead_press").next_weight, 47.5);
+  store.close();
+});
+
 test("missed weighted lift repeats and increments failure count", () => {
   const store = freshStore();
   const workout = store.getOrCreateCurrentWorkout();
