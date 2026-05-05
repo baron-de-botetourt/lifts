@@ -5,6 +5,9 @@ This is the reusable, public-safe playbook for deploying small apps to the
 deployment conventions, but it must not contain secret values such as passwords,
 tokens, private keys, or session secrets.
 
+For routine updates to the already-deployed Lifts app, use
+`LIFTS_UPDATE_GUIDE.md`.
+
 Last updated: 2026-05-03 16:13 UTC
 
 ## Current VPS shape
