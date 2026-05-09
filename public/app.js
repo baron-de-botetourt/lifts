@@ -261,11 +261,7 @@ function renderPlateGuideModal(lift) {
     note.textContent = "This weight cannot be loaded exactly with the configured bar and plates.";
     sheet.append(note);
   } else {
-    sheet.append(
-      renderGuideRow("Bar", `${formatWeight(guide.barWeight)} ${state.units}`),
-      renderPlateRow(guide),
-      renderGuideRow("Total", plateFormula(guide))
-    );
+    sheet.append(renderPlateStack(guide));
   }
 
   plateGuideModal.replaceChildren(backdrop, sheet);
@@ -273,22 +269,7 @@ function renderPlateGuideModal(lift) {
   close.focus({ preventScroll: true });
 }
 
-function renderGuideRow(label, value) {
-  const row = document.createElement("div");
-  row.className = "plate-guide-row";
-  const labelEl = document.createElement("span");
-  labelEl.textContent = label;
-  const valueEl = document.createElement("strong");
-  valueEl.textContent = value;
-  row.append(labelEl, valueEl);
-  return row;
-}
-
-function renderPlateRow(guide) {
-  const row = document.createElement("div");
-  row.className = "plate-guide-row";
-  const label = document.createElement("span");
-  label.textContent = "Each side";
+function renderPlateStack(guide) {
   const stack = document.createElement("div");
   stack.className = "plate-stack";
 
@@ -303,23 +284,9 @@ function renderPlateRow(guide) {
       chip.textContent = formatWeight(plate);
       stack.append(chip);
     }
-    const suffix = document.createElement("span");
-    suffix.textContent = "per side";
-    stack.append(suffix);
   }
 
-  row.append(label, stack);
-  return row;
-}
-
-function plateFormula(guide) {
-  const counts = new Map();
-  for (const plate of guide.platesPerSide) {
-    counts.set(plate, (counts.get(plate) || 0) + 2);
-  }
-  const plateParts = [...counts].map(([plate, count]) => `${count}x${formatWeight(plate)}`);
-  return [`${formatWeight(guide.barWeight)} bar`, ...plateParts].join(" + ")
-    + ` = ${formatWeight(guide.targetWeight)} ${state.units}`;
+  return stack;
 }
 
 function handlePlateGuideModalClick(event) {

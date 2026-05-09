@@ -351,52 +351,35 @@ a {
   font-weight: 900;
 }
 
-.plate-guide-row {
+.plate-stack {
   min-width: 0;
   padding-top: 9px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border-top: 1px solid rgba(200, 209, 204, 0.75);
-  font-size: 14px;
-}
-
-.plate-guide-row > span {
-  color: var(--muted);
-  font-weight: 700;
-}
-
-.plate-guide-row strong {
-  color: var(--ink);
-  font-weight: 850;
-  text-align: right;
-}
-
-.plate-stack {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 8px;
+  border-top: 1px solid rgba(200, 209, 204, 0.75);
 }
 
-.plate-stack > span {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
+.plate-stack > strong:not(.plate-chip) {
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 850;
 }
 
 .plate-chip {
-  min-width: 34px;
-  min-height: 26px;
-  padding: 4px 7px;
+  min-width: 44px;
+  min-height: 34px;
+  padding: 6px 10px;
   display: inline-grid;
   place-items: center;
   border: 1px solid rgba(36, 76, 58, 0.28);
   border-radius: 8px;
   background: #eef4f1;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 850;
   font-variant-numeric: tabular-nums;
 }
 
