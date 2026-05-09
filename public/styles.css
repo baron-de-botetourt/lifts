@@ -44,7 +44,7 @@ a {
 .topbar {
   min-height: 52px;
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto auto auto;
   align-items: center;
   gap: 8px;
 }
@@ -95,6 +95,23 @@ a {
   font-size: 13px;
   font-weight: 800;
   text-decoration: none;
+}
+
+.reset-button {
+  min-width: 76px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid rgba(163, 22, 33, 0.45);
+  border-radius: 8px;
+  background: #fff7f7;
+  color: var(--warn);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.reset-button:disabled {
+  opacity: 0.55;
 }
 
 .workout {

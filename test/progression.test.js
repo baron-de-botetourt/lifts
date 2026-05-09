@@ -103,6 +103,21 @@ test("finishing the same workout twice does not apply progression twice", () => 
   store.close();
 });
 
+test("resetting an in-progress workout clears recorded sets without progression", () => {
+  const store = freshStore();
+  const workout = store.getOrCreateCurrentWorkout();
+  completeLift(store, workout, "squat");
+
+  const reset = store.resetWorkout(workout.workout.id);
+  const squat = reset.lifts.find((lift) => lift.liftId === "squat");
+
+  assert.equal(reset.workout.id, workout.workout.id);
+  assert.equal(reset.workout.status, "in_progress");
+  assert.ok(squat.sets.every((set) => set.reps === null && set.completedAt === null));
+  assert.equal(store.getLiftState("squat").next_weight, 45);
+  store.close();
+});
+
 function completeLift(store, workout, liftId) {
   const lift = workout.lifts.find((candidate) => candidate.liftId === liftId);
   assert.ok(lift, `Expected lift ${liftId}`);

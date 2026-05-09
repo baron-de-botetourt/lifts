@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#244c3a">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/icon-192.png">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css?v=reset-day">
   <title>Lifts</title>
 </head>
 <body>
@@ -23,6 +23,7 @@
         <span>Rest</span>
         <strong id="rest-timer">Ready</strong>
       </div>
+      <button id="reset-button" class="reset-button" type="button">Reset Day</button>
       <a class="export-link" href="/export/database.sqlite">DB</a>
     </header>
 
@@ -34,6 +35,6 @@
       <button id="finish-button" class="finish-button" type="button">Finish Workout</button>
     </footer>
   </div>
-  <script src="/app.js" type="module"></script>
+  <script src="/app.js?v=reset-day" type="module"></script>
 </body>
 </html>

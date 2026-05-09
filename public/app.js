@@ -6,8 +6,10 @@ const liftCount = document.querySelector("#lift-count");
 const restTimer = document.querySelector("#rest-timer");
 const workoutEl = document.querySelector("#workout");
 const finishButton = document.querySelector("#finish-button");
+const resetButton = document.querySelector("#reset-button");
 
 finishButton.addEventListener("click", finishWorkout);
+resetButton.addEventListener("click", resetWorkout);
 workoutEl.addEventListener("click", handleWorkoutClick);
 
 loadWorkout();
@@ -67,6 +69,25 @@ async function finishWorkout() {
   }
 }
 
+async function resetWorkout() {
+  if (!state || state.workout.status !== "in_progress") {
+    return;
+  }
+
+  if (!confirm("Reset day? All recorded sets will be cleared.")) {
+    return;
+  }
+
+  resetButton.disabled = true;
+  finishButton.disabled = true;
+  try {
+    state = await requestJson(`/api/workout/${state.workout.id}/reset`, { method: "POST" });
+    render();
+  } catch (error) {
+    showError(error.message);
+  }
+}
+
 function render() {
   const workout = state.workout;
   dayLabel.textContent = `Day ${workout.programDay}`;
@@ -83,9 +104,11 @@ function render() {
     liftCount.textContent = "Saved";
     finishButton.textContent = "Workout Saved";
     finishButton.disabled = true;
+    resetButton.disabled = true;
   } else {
     finishButton.textContent = "Finish Workout";
     finishButton.disabled = false;
+    resetButton.disabled = false;
   }
 
   startTimer();

@@ -99,6 +99,14 @@ export function createApp(options = {}) {
     }
   });
 
+  app.post("/api/workout/:id/reset", (req, res, next) => {
+    try {
+      res.json(store.resetWorkout(Number(req.params.id)));
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.get("/export/database.sqlite", (req, res, next) => {
     try {
       store.checkpoint();

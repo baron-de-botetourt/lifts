@@ -201,6 +201,30 @@ function createStore(db, filename) {
     return workoutId;
   });
 
+  const reset = db.transaction((workoutId) => {
+    const workout = db.prepare("SELECT * FROM workouts WHERE id = ?").get(workoutId);
+    if (!workout) {
+      throw httpError(404, "Workout not found");
+    }
+    if (workout.status !== "in_progress") {
+      throw httpError(409, "Cannot reset a completed workout");
+    }
+
+    db.prepare(`
+      UPDATE workout_lifts
+      SET success = NULL
+      WHERE workout_id = ?
+    `).run(workoutId);
+    db.prepare(`
+      UPDATE sets
+      SET reps = NULL, completed_at = NULL
+      WHERE workout_lift_id IN (
+        SELECT id FROM workout_lifts WHERE workout_id = ?
+      )
+    `).run(workoutId);
+    return workoutId;
+  });
+
   return {
     filename,
     getOrCreateCurrentWorkout() {
@@ -249,6 +273,10 @@ function createStore(db, filename) {
     },
     finishWorkout(workoutId) {
       const id = finish(workoutId);
+      return hydrateWorkout(db, id);
+    },
+    resetWorkout(workoutId) {
+      const id = reset(workoutId);
       return hydrateWorkout(db, id);
     },
     getLiftState(liftId) {

@@ -71,6 +71,32 @@ test("finishing twice through the API does not double-apply progression", async 
   }
 });
 
+test("resetting through the API clears recorded sets on the current workout", async () => {
+  const fixture = await startFixture();
+  try {
+    const cookie = await authCookie(fixture.baseUrl);
+    let current = await requestJson(fixture.baseUrl, "/api/workout/current", cookie);
+    const squat = current.lifts.find((lift) => lift.liftId === "squat");
+    current = await requestJson(fixture.baseUrl, `/api/sets/${squat.sets[0].id}`, cookie, {
+      method: "POST",
+      body: JSON.stringify({ reps: squat.targetReps })
+    });
+
+    const reset = await requestJson(fixture.baseUrl, `/api/workout/${current.workout.id}/reset`, cookie, {
+      method: "POST"
+    });
+    const resetSquat = reset.lifts.find((lift) => lift.liftId === "squat");
+
+    assert.equal(reset.workout.id, current.workout.id);
+    assert.equal(reset.workout.status, "in_progress");
+    assert.ok(resetSquat.sets.every((set) => set.reps === null && set.completedAt === null));
+    assert.equal(reset.lastSetCompletedAt, null);
+    assert.equal(fixture.store.getLiftState("squat").next_weight, 45);
+  } finally {
+    await fixture.close();
+  }
+});
+
 test("authenticated SQLite export downloads the database file", async () => {
   const fixture = await startFixture();
   try {
