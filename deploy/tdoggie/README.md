@@ -11,12 +11,27 @@ Create this DNS record before requesting the HTTPS certificate:
 lifts.tdoggie.com A 173.230.136.222
 ```
 
-## 2. SSH access
+## 2. SSH and Git access
 
-Codex access uses the temporary key documented in `TDOGGIE_SERVER_SETUP.md`:
+Codex access uses a persistent deploy key stored outside temporary directories:
 
 ```sh
-ssh -i /private/tmp/codex_lifts_deploy_ed25519 -o IdentitiesOnly=yes tindell@tdoggie.com
+ssh tdoggie-lifts
+```
+
+The `tdoggie-lifts` SSH host alias should point at
+`/Users/tindelllockett/.ssh/id_ed25519_lifts_deploy`. If the alias is missing,
+connect directly:
+
+```sh
+ssh -i /Users/tindelllockett/.ssh/id_ed25519_lifts_deploy -o IdentitiesOnly=yes tindell@tdoggie.com
+```
+
+For GitHub pushes from the local machine, use the Botetourt GitHub SSH key via
+the `github-botetourt` host alias:
+
+```sh
+git push github-botetourt:baron-de-botetourt/lifts.git published-main:main
 ```
 
 ## 3. Root prerequisites

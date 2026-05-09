@@ -126,7 +126,7 @@ SERVICE="${APP}.service"
 3. Preflight as `tindell`:
 
 ```sh
-ssh tindell@tdoggie.com
+ssh tdoggie-lifts
 node --version
 npm --version
 git --version
@@ -261,6 +261,7 @@ Do not store env files in git.
 As `tindell`:
 
 ```sh
+ssh tdoggie-lifts
 cd /home/tindell/<app>
 git fetch --prune origin
 git switch main
@@ -320,6 +321,9 @@ Lifts is the current model deployment:
 
 - Repo: `https://github.com/baron-de-botetourt/lifts`
 - Checkout: `/home/tindell/lifts`
+- SSH to VPS: `ssh tdoggie-lifts`
+- Local deploy key: `/Users/tindelllockett/.ssh/id_ed25519_lifts_deploy`
+- GitHub SSH key: `/Users/tindelllockett/.ssh/id_ed25519_botetourt`
 - Port: `3002`
 - Service: `lifts.service`
 - Env: `/etc/lifts/lifts.env`

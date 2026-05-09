@@ -32,10 +32,13 @@ git commit -m "<clear message>"
 git push github-botetourt:baron-de-botetourt/lifts.git published-main:main
 ```
 
+The `github-botetourt` SSH host alias must use the Botetourt GitHub key:
+`/Users/tindelllockett/.ssh/id_ed25519_botetourt`.
+
 On the VPS:
 
 ```sh
-ssh tindell@tdoggie.com
+ssh tdoggie-lifts
 cd /home/tindell/lifts
 git fetch --prune origin
 git switch main
@@ -47,10 +50,13 @@ sudo systemctl restart lifts.service
 systemctl status lifts.service --no-pager
 ```
 
-If a temporary Codex key is being used, connect with:
+The `tdoggie-lifts` SSH host alias should use the persistent Lifts deploy key:
+`/Users/tindelllockett/.ssh/id_ed25519_lifts_deploy`.
+
+If the SSH config is unavailable, connect with:
 
 ```sh
-ssh -i <temporary-key-path> -o IdentitiesOnly=yes tindell@tdoggie.com
+ssh -i /Users/tindelllockett/.ssh/id_ed25519_lifts_deploy -o IdentitiesOnly=yes tindell@tdoggie.com
 ```
 
 Then verify:
