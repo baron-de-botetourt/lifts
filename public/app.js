@@ -1,6 +1,7 @@
 let state = null;
 let timerHandle = null;
 let plateGuideReturnFocus = null;
+const PLATE_GUIDE_WEIGHTS = [45, 35, 25, 10, 5, 2.5, 1.25];
 
 const dayLabel = document.querySelector("#day-label");
 const liftCount = document.querySelector("#lift-count");
@@ -277,13 +278,35 @@ function renderPlateStack(guide) {
     const value = document.createElement("strong");
     value.textContent = "No plates";
     stack.append(value);
-  } else {
-    for (const plate of guide.platesPerSide) {
+    return stack;
+  }
+
+  const counts = new Map();
+  for (const plate of guide.platesPerSide) {
+    counts.set(plate, (counts.get(plate) || 0) + 1);
+  }
+
+  for (const plate of PLATE_GUIDE_WEIGHTS) {
+    const slot = document.createElement("div");
+    slot.className = "plate-slot";
+    const count = counts.get(plate) || 0;
+    if (count === 0) {
+      slot.classList.add("plate-slot-empty");
+      slot.setAttribute("aria-hidden", "true");
+    } else {
       const chip = document.createElement("strong");
       chip.className = "plate-chip";
+      chip.dataset.plateWeight = String(plate).replace(".", "_");
       chip.textContent = formatWeight(plate);
-      stack.append(chip);
+      if (count > 1) {
+        const badge = document.createElement("span");
+        badge.textContent = `x${count}`;
+        chip.append(badge);
+        chip.setAttribute("aria-label", `${formatWeight(plate)} pounds times ${count}`);
+      }
+      slot.append(chip);
     }
+    stack.append(slot);
   }
 
   return stack;
