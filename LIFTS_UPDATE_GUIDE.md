@@ -50,6 +50,22 @@ sudo systemctl restart lifts.service
 systemctl status lifts.service --no-pager
 ```
 
+If `sudo systemctl restart lifts.service` prompts for a password during a
+routine code-only deploy, you can refresh the service without sudo only when
+the service is owned by `tindell` and configured to auto-restart on failure:
+
+```sh
+systemctl show lifts.service -p User -p Restart -p MainPID --no-pager
+# Expected: User=tindell and Restart=on-failure
+kill -KILL <MainPID>
+systemctl status lifts.service --no-pager
+```
+
+This works because systemd restarts the `tindell`-owned Node process after the
+failure signal, causing it to reload code from `/home/tindell/lifts`. Do not use
+this fallback if `User` is not `tindell`, `Restart` is not `on-failure`, or
+`MainPID` is empty.
+
 The `tdoggie-lifts` SSH host alias should use the persistent Lifts deploy key:
 `/Users/tindelllockett/.ssh/id_ed25519_lifts_deploy`.
 
