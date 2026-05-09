@@ -9,6 +9,7 @@ import {
   getLift,
   nextProgramDay
 } from "./program.js";
+import { calculatePlateGuide } from "./plate-guide.js";
 
 const DEFAULT_DB_PATH = path.join(process.cwd(), "data", "lifts.sqlite");
 
@@ -313,7 +314,7 @@ function hydrateWorkout(db, workoutId) {
       weight: set.weight,
       completedAt: set.completed_at
     }));
-    return {
+    const hydratedLift = {
       id: row.id,
       liftId: row.lift_id,
       name: lift.name,
@@ -324,6 +325,10 @@ function hydrateWorkout(db, workoutId) {
       success: row.success,
       sets
     };
+    if (lift.plateGuide) {
+      hydratedLift.plateGuide = calculatePlateGuide(row.target_weight, PROGRAM.plateGuide);
+    }
+    return hydratedLift;
   });
 
   const lastSetCompletedAt = lifts

@@ -118,6 +118,25 @@ test("resetting an in-progress workout clears recorded sets without progression"
   store.close();
 });
 
+test("current workout includes plate guide data for barbell lifts only", () => {
+  const store = freshStore();
+  const workout = store.getOrCreateCurrentWorkout();
+  const squat = workout.lifts.find((candidate) => candidate.liftId === "squat");
+  const chinUp = workout.lifts.find((candidate) => candidate.liftId === "chin_up");
+  const latRaise = workout.lifts.find((candidate) => candidate.liftId === "lat_raise");
+
+  assert.deepEqual(squat.plateGuide, {
+    available: true,
+    targetWeight: 45,
+    barWeight: 45,
+    sideWeight: 0,
+    platesPerSide: []
+  });
+  assert.equal(Object.hasOwn(chinUp, "plateGuide"), false);
+  assert.equal(Object.hasOwn(latRaise, "plateGuide"), false);
+  store.close();
+});
+
 function completeLift(store, workout, liftId) {
   const lift = workout.lifts.find((candidate) => candidate.liftId === liftId);
   assert.ok(lift, `Expected lift ${liftId}`);

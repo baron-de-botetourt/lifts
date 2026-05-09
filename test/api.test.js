@@ -49,6 +49,29 @@ test("current workout resumes the same draft across requests", async () => {
   }
 });
 
+test("current workout API exposes plate guides for barbell lifts only", async () => {
+  const fixture = await startFixture();
+  try {
+    const cookie = await authCookie(fixture.baseUrl);
+    const current = await requestJson(fixture.baseUrl, "/api/workout/current", cookie);
+    const squat = current.lifts.find((lift) => lift.liftId === "squat");
+    const chinUp = current.lifts.find((lift) => lift.liftId === "chin_up");
+    const latRaise = current.lifts.find((lift) => lift.liftId === "lat_raise");
+
+    assert.deepEqual(squat.plateGuide, {
+      available: true,
+      targetWeight: 45,
+      barWeight: 45,
+      sideWeight: 0,
+      platesPerSide: []
+    });
+    assert.equal(Object.hasOwn(chinUp, "plateGuide"), false);
+    assert.equal(Object.hasOwn(latRaise, "plateGuide"), false);
+  } finally {
+    await fixture.close();
+  }
+});
+
 test("finishing twice through the API does not double-apply progression", async () => {
   const fixture = await startFixture();
   try {

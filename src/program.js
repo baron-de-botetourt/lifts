@@ -6,6 +6,10 @@ export const PROGRAM = {
     percent: 0.1,
     roundTo: 5
   },
+  plateGuide: {
+    barWeightLb: 45,
+    pairedPlatesLb: [45, 35, 25, 10, 5, 2.5, 1.25]
+  },
   days: {
     A: ["squat", "bench_press", "barbell_row", "chin_up", "lat_raise"],
     B: ["squat", "overhead_press", "deadlift", "barbell_curl", "knee_raises"]
@@ -17,7 +21,8 @@ export const PROGRAM = {
       targetSets: 5,
       targetReps: 5,
       startingWeightLb: 45,
-      incrementLb: 5
+      incrementLb: 5,
+      plateGuide: true
     },
     bench_press: {
       name: "Bench Press",
@@ -25,7 +30,8 @@ export const PROGRAM = {
       targetSets: 5,
       targetReps: 5,
       startingWeightLb: 45,
-      incrementLb: 5
+      incrementLb: 5,
+      plateGuide: true
     },
     barbell_row: {
       name: "Barbell Row",
@@ -33,7 +39,8 @@ export const PROGRAM = {
       targetSets: 5,
       targetReps: 5,
       startingWeightLb: 45,
-      incrementLb: 5
+      incrementLb: 5,
+      plateGuide: true
     },
     chin_up: {
       name: "Chin Up",
@@ -56,7 +63,8 @@ export const PROGRAM = {
       targetSets: 5,
       targetReps: 5,
       startingWeightLb: 45,
-      incrementLb: 2.5
+      incrementLb: 2.5,
+      plateGuide: true
     },
     deadlift: {
       name: "Deadlift",
@@ -64,7 +72,8 @@ export const PROGRAM = {
       targetSets: 1,
       targetReps: 5,
       startingWeightLb: 95,
-      incrementLb: 10
+      incrementLb: 10,
+      plateGuide: true
     },
     barbell_curl: {
       name: "Barbell Curl",
@@ -72,7 +81,8 @@ export const PROGRAM = {
       targetSets: 3,
       targetReps: 10,
       startingWeightLb: 45,
-      incrementLb: 5
+      incrementLb: 5,
+      plateGuide: true
     },
     knee_raises: {
       name: "Knee Raises",

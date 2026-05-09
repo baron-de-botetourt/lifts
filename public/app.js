@@ -1,5 +1,6 @@
 let state = null;
 let timerHandle = null;
+let plateGuideReturnFocus = null;
 
 const dayLabel = document.querySelector("#day-label");
 const liftCount = document.querySelector("#lift-count");
@@ -7,10 +8,13 @@ const restTimer = document.querySelector("#rest-timer");
 const workoutEl = document.querySelector("#workout");
 const finishButton = document.querySelector("#finish-button");
 const resetButton = document.querySelector("#reset-button");
+const plateGuideModal = document.querySelector("#plate-guide-modal");
 
 finishButton.addEventListener("click", finishWorkout);
 resetButton.addEventListener("click", resetWorkout);
 workoutEl.addEventListener("click", handleWorkoutClick);
+plateGuideModal.addEventListener("click", handlePlateGuideModalClick);
+document.addEventListener("keydown", handleKeyDown);
 
 loadWorkout();
 
@@ -24,6 +28,12 @@ async function loadWorkout() {
 }
 
 async function handleWorkoutClick(event) {
+  const guideButton = event.target.closest("[data-plate-lift-id]");
+  if (guideButton && state) {
+    openPlateGuide(guideButton.dataset.plateLiftId);
+    return;
+  }
+
   const setButton = event.target.closest("[data-set-id]");
   if (!setButton || !state || state.workout.status !== "in_progress") {
     return;
@@ -125,9 +135,14 @@ function renderLift(lift) {
   title.textContent = lift.name;
   head.append(title);
 
-  const target = document.createElement("span");
-  target.className = "target";
+  const target = lift.plateGuide ? document.createElement("button") : document.createElement("span");
+  target.className = lift.plateGuide ? "target target-button" : "target";
   target.textContent = targetText(lift);
+  if (lift.plateGuide) {
+    target.type = "button";
+    target.dataset.plateLiftId = lift.liftId;
+    target.setAttribute("aria-label", `Show plates for ${lift.name} at ${formatWeight(lift.targetWeight)} ${state.units}`);
+  }
   head.append(target);
 
   section.append(head);
@@ -195,6 +210,140 @@ function formatWeight(weight) {
 
 function isLiftComplete(lift) {
   return lift.sets.every((set) => set.reps !== null && set.reps >= lift.targetReps);
+}
+
+function openPlateGuide(liftId) {
+  const lift = state.lifts.find((candidate) => candidate.liftId === liftId);
+  if (!lift?.plateGuide) {
+    return;
+  }
+
+  plateGuideReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  renderPlateGuideModal(lift);
+}
+
+function renderPlateGuideModal(lift) {
+  const guide = lift.plateGuide;
+  const backdrop = document.createElement("div");
+  backdrop.className = "plate-guide-backdrop";
+  backdrop.dataset.plateGuideClose = "true";
+
+  const sheet = document.createElement("section");
+  sheet.className = "plate-guide-sheet";
+  sheet.setAttribute("role", "dialog");
+  sheet.setAttribute("aria-modal", "true");
+  sheet.setAttribute("aria-labelledby", "plate-guide-title");
+
+  const head = document.createElement("div");
+  head.className = "plate-guide-head";
+
+  const titleBlock = document.createElement("div");
+  const title = document.createElement("h2");
+  title.id = "plate-guide-title";
+  title.textContent = lift.name;
+  const target = document.createElement("p");
+  target.textContent = `${formatWeight(guide.targetWeight)} ${state.units}`;
+  titleBlock.append(title, target);
+
+  const close = document.createElement("button");
+  close.className = "plate-guide-close";
+  close.type = "button";
+  close.textContent = "X";
+  close.dataset.plateGuideClose = "true";
+  close.setAttribute("aria-label", "Close plate guide");
+
+  head.append(titleBlock, close);
+  sheet.append(head);
+
+  if (!guide.available) {
+    const note = document.createElement("p");
+    note.className = "plate-guide-note";
+    note.textContent = "This weight cannot be loaded exactly with the configured bar and plates.";
+    sheet.append(note);
+  } else {
+    sheet.append(
+      renderGuideRow("Bar", `${formatWeight(guide.barWeight)} ${state.units}`),
+      renderPlateRow(guide),
+      renderGuideRow("Total", plateFormula(guide))
+    );
+  }
+
+  plateGuideModal.replaceChildren(backdrop, sheet);
+  plateGuideModal.hidden = false;
+  close.focus({ preventScroll: true });
+}
+
+function renderGuideRow(label, value) {
+  const row = document.createElement("div");
+  row.className = "plate-guide-row";
+  const labelEl = document.createElement("span");
+  labelEl.textContent = label;
+  const valueEl = document.createElement("strong");
+  valueEl.textContent = value;
+  row.append(labelEl, valueEl);
+  return row;
+}
+
+function renderPlateRow(guide) {
+  const row = document.createElement("div");
+  row.className = "plate-guide-row";
+  const label = document.createElement("span");
+  label.textContent = "Each side";
+  const stack = document.createElement("div");
+  stack.className = "plate-stack";
+
+  if (guide.platesPerSide.length === 0) {
+    const value = document.createElement("strong");
+    value.textContent = "No plates";
+    stack.append(value);
+  } else {
+    for (const plate of guide.platesPerSide) {
+      const chip = document.createElement("strong");
+      chip.className = "plate-chip";
+      chip.textContent = formatWeight(plate);
+      stack.append(chip);
+    }
+    const suffix = document.createElement("span");
+    suffix.textContent = "per side";
+    stack.append(suffix);
+  }
+
+  row.append(label, stack);
+  return row;
+}
+
+function plateFormula(guide) {
+  const counts = new Map();
+  for (const plate of guide.platesPerSide) {
+    counts.set(plate, (counts.get(plate) || 0) + 2);
+  }
+  const plateParts = [...counts].map(([plate, count]) => `${count}x${formatWeight(plate)}`);
+  return [`${formatWeight(guide.barWeight)} bar`, ...plateParts].join(" + ")
+    + ` = ${formatWeight(guide.targetWeight)} ${state.units}`;
+}
+
+function handlePlateGuideModalClick(event) {
+  if (event.target.closest("[data-plate-guide-close]")) {
+    closePlateGuide();
+  }
+}
+
+function handleKeyDown(event) {
+  if (event.key === "Escape" && !plateGuideModal.hidden) {
+    closePlateGuide();
+  }
+}
+
+function closePlateGuide() {
+  if (plateGuideModal.hidden) {
+    return;
+  }
+  plateGuideModal.hidden = true;
+  plateGuideModal.replaceChildren();
+  if (plateGuideReturnFocus) {
+    plateGuideReturnFocus.focus({ preventScroll: true });
+    plateGuideReturnFocus = null;
+  }
 }
 
 function startTimer() {
